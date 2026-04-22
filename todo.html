@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Tasks</title>
+<link rel="manifest" href="todo-manifest.json">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✅</text></svg>">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tasks">
+<meta name="theme-color" content="#0f0f0f">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f0f0f; color: #e8e8e8; min-height: 100vh; }
+
+/* Header */
+.header { padding: 52px 24px 20px; }
+.header h1 { font-size: 2.2rem; font-weight: 800; color: #fff; }
+.subtitle { color: #444; font-size: 0.85rem; margin-top: 5px; }
+
+/* Add task */
+.add-section { padding: 0 24px 28px; }
+.add-input { width: 100%; background: #1a1a1a; border: 1px solid #252525; border-radius: 14px; color: #fff; font-size: 1rem; padding: 15px 16px; outline: none; margin-bottom: 10px; -webkit-appearance: none; }
+.add-input:focus { border-color: #4ae8a0; }
+.add-input::placeholder { color: #3a3a3a; }
+
+.priority-row { display: flex; gap: 8px; margin-bottom: 10px; }
+.priority-btn { flex: 1; padding: 11px; border-radius: 10px; border: 1.5px solid #252525; background: #1a1a1a; color: #555; font-size: 0.78rem; font-weight: 700; cursor: pointer; letter-spacing: 0.8px; transition: all 0.15s; }
+.priority-btn.selected { border-color: #4ae8a0; color: #4ae8a0; background: rgba(74,232,160,0.07); }
+
+.add-btn { width: 100%; background: #4ae8a0; color: #000; font-weight: 800; font-size: 0.95rem; border: none; border-radius: 12px; padding: 15px; cursor: pointer; letter-spacing: 0.2px; transition: transform 0.1s; }
+.add-btn:active { transform: scale(0.98); }
+
+/* Section label */
+.section-label { font-size: 0.67rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #333; padding: 0 24px; margin-bottom: 10px; }
+
+/* Task list */
+.tasks { padding: 0 24px; }
+
+.task-item { display: flex; align-items: center; gap: 14px; background: #141414; border: 1px solid #1e1e1e; border-radius: 14px; padding: 15px 16px; margin-bottom: 8px; transition: opacity 0.25s, transform 0.25s; }
+.task-item.completing { opacity: 0; transform: translateX(24px); }
+
+.check-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #2e2e2e; background: none; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0; transition: all 0.2s; -webkit-appearance: none; }
+.check-btn:hover { border-color: #4ae8a0; }
+
+.task-text { flex: 1; font-size: 0.95rem; color: #e0e0e0; line-height: 1.45; }
+
+.priority-tag { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.8px; flex-shrink: 0; }
+.priority-tag.high { color: #555; }
+.priority-tag.medium { color: #3d3d3d; }
+.priority-tag.low { color: #2e2e2e; }
+
+/* Completed section */
+.completed-header { display: flex; align-items: center; justify-content: space-between; padding: 24px 24px 10px; cursor: pointer; user-select: none; }
+.completed-title { font-size: 0.67rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #333; }
+.chevron { color: #333; font-size: 0.75rem; transition: transform 0.2s; }
+.chevron.open { transform: rotate(180deg); }
+.clear-btn { font-size: 0.72rem; color: #2e2e2e; background: none; border: none; cursor: pointer; padding: 4px 0; }
+.clear-btn:hover { color: #555; }
+
+.completed-list { padding: 0 24px 100px; display: none; }
+.completed-list.open { display: block; }
+
+.task-item.done { opacity: 0.35; }
+.task-item.done .task-text { text-decoration: line-through; color: #555; }
+.task-item.done .check-btn { background: #4ae8a0; border-color: #4ae8a0; font-size: 13px; color: #000; font-weight: 800; }
+.task-item.done .check-btn::after { content: '✓'; }
+
+/* Group labels */
+.group-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #333; padding: 16px 4px 8px; }
+.group-label:first-child { padding-top: 0; }
+
+/* Empty state */
+.empty-state { text-align: center; padding: 52px 24px; color: #2e2e2e; }
+.empty-emoji { font-size: 2.8rem; margin-bottom: 14px; }
+.empty-text { font-size: 0.88rem; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Tasks</h1>
+  <div class="subtitle" id="subtitle">Nothing to do</div>
+</div>
+
+<div class="add-section">
+  <input class="add-input" id="task-input" type="text" placeholder="What needs doing?" autocomplete="off" autocorrect="off">
+  <div class="priority-row">
+    <button class="priority-btn selected" data-priority="high"  onclick="selectPriority(this)">HIGH</button>
+    <button class="priority-btn"          data-priority="medium" onclick="selectPriority(this)">MED</button>
+    <button class="priority-btn"          data-priority="low"    onclick="selectPriority(this)">LOW</button>
+  </div>
+  <button class="add-btn" onclick="addTask()">+ Add Task</button>
+</div>
+
+<div class="section-label" id="tasks-label">TO DO</div>
+<div class="tasks" id="tasks-container"></div>
+
+<div class="completed-header" onclick="toggleCompleted()">
+  <span class="completed-title">Done <span id="completed-count"></span></span>
+  <div style="display:flex;align-items:center;gap:12px">
+    <button class="clear-btn" onclick="clearCompleted(event)">Clear all</button>
+    <span class="chevron" id="chevron">▼</span>
+  </div>
+</div>
+<div class="completed-list" id="completed-list"></div>
+
+<script>
+let tasks = JSON.parse(localStorage.getItem('todo-tasks') || '[]');
+let selectedPriority = 'high';
+const PRIORITY_ORDER  = { high: 0, medium: 1, low: 2 };
+const PRIORITY_LABELS = { high: 'HIGH', medium: 'MED', low: 'LOW' };
+
+function selectPriority(btn) {
+  document.querySelectorAll('.priority-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedPriority = btn.dataset.priority;
+}
+
+function addTask() {
+  const input = document.getElementById('task-input');
+  const text  = input.value.trim();
+  if (!text) { input.focus(); return; }
+  tasks.push({ id: Date.now(), text, priority: selectedPriority, completed: false, completedAt: null });
+  input.value = '';
+  input.focus();
+  save(); render();
+}
+
+function completeTask(id) {
+  const el = document.getElementById('task-' + id);
+  if (el) {
+    el.classList.add('completing');
+    setTimeout(() => {
+      const task = tasks.find(t => t.id === id);
+      if (task) { task.completed = true; task.completedAt = Date.now(); }
+      save(); render();
+    }, 250);
+  }
+}
+
+function restoreTask(id) {
+  const task = tasks.find(t => t.id === id);
+  if (task) { task.completed = false; task.completedAt = null; save(); render(); }
+}
+
+function clearCompleted(e) {
+  e.stopPropagation();
+  tasks = tasks.filter(t => !t.completed);
+  save(); render();
+}
+
+function toggleCompleted() {
+  const list    = document.getElementById('completed-list');
+  const chevron = document.getElementById('chevron');
+  list.classList.toggle('open');
+  chevron.classList.toggle('open');
+}
+
+function save() { localStorage.setItem('todo-tasks', JSON.stringify(tasks)); }
+
+function render() {
+  const active    = tasks.filter(t => !t.completed).sort((a,b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]);
+  const completed = tasks.filter(t =>  t.completed).sort((a,b) => b.completedAt - a.completedAt);
+
+  const container = document.getElementById('tasks-container');
+  container.innerHTML = '';
+  if (active.length === 0) {
+    const e = document.createElement('div');
+    e.className = 'empty-state';
+    e.innerHTML = '<div class="empty-emoji">✅</div><div class="empty-text">All clear!</div>';
+    container.appendChild(e);
+  } else {
+    let lastPriority = null;
+    active.forEach(t => {
+      if (t.priority !== lastPriority) {
+        const label = document.createElement('div');
+        label.className = 'group-label';
+        label.textContent = PRIORITY_LABELS[t.priority];
+        container.appendChild(label);
+        lastPriority = t.priority;
+      }
+      container.appendChild(makeTask(t, false));
+    });
+  }
+
+  const completedList = document.getElementById('completed-list');
+  completedList.innerHTML = '';
+  completed.forEach(t => completedList.appendChild(makeTask(t, true)));
+
+  document.getElementById('subtitle').textContent =
+    active.length === 0 ? 'All clear! 🎉' :
+    active.length === 1 ? '1 task' : `${active.length} tasks`;
+
+  document.getElementById('completed-count').textContent =
+    completed.length > 0 ? `(${completed.length})` : '';
+}
+
+function makeTask(task, isDone) {
+  const div   = document.createElement('div');
+  div.className = 'task-item' + (isDone ? ' done' : '');
+  div.id = 'task-' + task.id;
+
+  const btn = document.createElement('button');
+  btn.className = 'check-btn';
+  btn.addEventListener('click', () => isDone ? restoreTask(task.id) : completeTask(task.id));
+
+  const text = document.createElement('div');
+  text.className = 'task-text';
+  text.textContent = task.text;
+
+  const tag = document.createElement('div');
+  tag.className = 'priority-tag ' + task.priority;
+  tag.textContent = PRIORITY_LABELS[task.priority];
+
+  div.appendChild(btn); div.appendChild(text); div.appendChild(tag);
+  return div;
+}
+
+// Enter key submits
+document.getElementById('task-input').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+
+// Apple touch icon
+(function() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 180;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#0f0f0f';
+  ctx.beginPath();
+  if (ctx.roundRect) { ctx.roundRect(0,0,180,180,22); }
+  else {
+    ctx.moveTo(22,0); ctx.lineTo(158,0); ctx.quadraticCurveTo(180,0,180,22);
+    ctx.lineTo(180,158); ctx.quadraticCurveTo(180,180,158,180);
+    ctx.lineTo(22,180); ctx.quadraticCurveTo(0,180,0,158);
+    ctx.lineTo(0,22); ctx.quadraticCurveTo(0,0,22,0);
+  }
+  ctx.fill();
+  ctx.font = '120px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('✅', 90, 95);
+  const l = document.createElement('link');
+  l.rel = 'apple-touch-icon'; l.href = c.toDataURL('image/png');
+  document.head.appendChild(l);
+})();
+
+// Service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./todo-sw.js'));
+}
+
+render();
+</script>
+</body>
+</html>
