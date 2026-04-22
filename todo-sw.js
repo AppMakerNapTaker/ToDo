@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tasks-v1';
+const CACHE_NAME = 'tasks-v2';
 const FILES_TO_CACHE = [
   './todo.html',
   './todo-manifest.json',
