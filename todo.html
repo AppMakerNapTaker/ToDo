@@ -832,13 +832,11 @@ document.getElementById('edit-subtask-input').addEventListener('keydown', e => {
   const ctx = c.getContext('2d');
   ctx.fillStyle = '#0F1A2B';
   ctx.fillRect(0, 0, 180, 180);
-  ctx.strokeStyle = '#E07838';
-  ctx.lineWidth = 10;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-  [[55,29,69,43,125,11],[55,71,69,85,125,53],[55,113,69,127,125,95],[55,155,69,169,125,137]].forEach(([x1,y1,x2,y2,x3,y3]) => {
-    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.lineTo(x3,y3); ctx.stroke();
-  });
+  ctx.font = '38px serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'left';
+  [38, 82, 126, 170].forEach(y => ctx.fillText('✅', 22, y));
   const l = document.createElement('link');
   l.rel = 'apple-touch-icon'; l.href = c.toDataURL('image/png');
   document.head.appendChild(l);
