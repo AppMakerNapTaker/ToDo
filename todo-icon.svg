@@ -1,4 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <rect width="512" height="512" fill="#0F1A2B"/>
-  <text x="256" y="290" font-size="380" text-anchor="middle" dominant-baseline="middle" font-family="Apple Color Emoji, Noto Color Emoji, Segoe UI Emoji, sans-serif">✅</text>
+  <!-- Notebook -->
+  <text x="220" y="275" font-size="310" text-anchor="middle" dominant-baseline="middle" font-family="Apple Color Emoji, Noto Color Emoji, Segoe UI Emoji, sans-serif">📓</text>
+  <!-- Small checkmark stacked bottom-right -->
+  <text x="390" y="410" font-size="170" text-anchor="middle" dominant-baseline="middle" font-family="Apple Color Emoji, Noto Color Emoji, Segoe UI Emoji, sans-serif">✅</text>
 </svg>
